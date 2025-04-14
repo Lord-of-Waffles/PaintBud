@@ -3,9 +3,11 @@ package com.example
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
+import com.google.firebase.database.FirebaseDatabase
 import io.ktor.server.application.*
 import io.ktor.server.thymeleaf.*
 import io.ktor.server.routing.*
+import io.ktor.server.http.content.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.plugins.contentnegotiation.*
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver
@@ -18,6 +20,12 @@ fun main(args: Array<String>) {
 fun Application.module() {
     // Initialize Firebase
     configureFirebase()
+
+    routing {
+        static("/static") {
+            resources("static")
+        }
+    }
 
     // Install existing Thymeleaf templating
     install(Thymeleaf) {
@@ -41,7 +49,7 @@ fun Application.configureFirebase() {
     try {
         // Load the service account key JSON file
         // You need to download this from Firebase console
-        val serviceAccount = FileInputStream("/src/main/resources/fb_prkey.json")
+        val serviceAccount = FileInputStream("src/main/resources/fb_prkey.json")
         
         val options = FirebaseOptions.builder()
             .setCredentials(GoogleCredentials.fromStream(serviceAccount))

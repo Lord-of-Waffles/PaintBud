@@ -31,7 +31,7 @@ dependencies {
 
     // Firebase
 
-    implementation("com.google.firebase:firebase-admin:9.1.0")
+    implementation("com.google.firebase:firebase-admin:9.1.1")
 
     // Kotlinx serialization
     implementation("io.ktor:ktor-serialization-jackson:3.1.2")

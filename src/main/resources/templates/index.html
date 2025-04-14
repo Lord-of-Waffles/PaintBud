@@ -2,12 +2,35 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <title>Ktor + Thymeleaf</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Paintbuddy</title>
+    <link rel="stylesheet" href="/static/css/bulma.min.css">
 </head>
 
 <body>
-    <h1 th:text="${message}">Default Message</h1>
-    <p>This is a Thymeleaf template in a Ktor application.</p>
+    <section class="section">
+        <nav class="level">
+            <button class="button is-link level-item has-text-centered">
+                Log in
+            </button>
+            <button class="button is-link level-item has-text-centered">
+                About
+            </button>
+            <button class="button is-link level-item has-text-centered">
+                Contact
+            </button>
+        </nav>
+        <section class="hero">
+            <div class="hero-body">
+                <h1 class="title">
+                    Hello, welcome to PaintBud!
+                </h1>
+                <p class="subtitle">
+                    Designed for miniature hobbyists, PaintBud allows you to track your hobby supplies
+                </p>
+            </div>
+        </section>
 </body>
 
 </html>
