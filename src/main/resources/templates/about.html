@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PaintBud</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .welcome-banner {
+            background-color: #f5f5f5;
+            padding: 2rem;
+            border-radius: 6px;
+            margin-bottom: 2rem;
+        }
+
+        .feature-section {
+            transition: transform 0.3s;
+            border-radius: 6px;
+        }
+
+        .feature-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .logo-image {
+            border-radius: 2%;
+            max-width: 200px;
+            height: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar is-primary" role="navigation" aria-label="main navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="/">
+                    <strong>PaintBud</strong>
+                </a>
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMenu">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+
+            <div id="navbarMenu" class="navbar-menu">
+                <div class="navbar-start">
+                    <a class="navbar-item is-active" href="/">
+                        Home
+                    </a>
+                    <a class="navbar-item" href="/about">
+                        About
+                    </a>
+                    <a class="navbar-item" href="/contact">
+                        Contact
+                    </a>
+                </div>
+
+                <div class="navbar-end">
+                    <div class="navbar-item">
+                        <div class="buttons">
+                            <a class="button is-light" href="/login">
+                                <span class="icon">
+                                    <i class="fas fa-sign-in-alt"></i>
+                                </span>
+                                <span>Log in</span>
+                            </a>
+                            <a class="button is-primary" href="/register">
+                                <span class="icon">
+                                    <i class="fas fa-user-plus"></i>
+                                </span>
+                                <span>Sign up</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <section class="section">
+        <div class="container">
+            <!-- Logo section -->
+            <div class="logo-container">
+                <img src="/static/media/logo.png" class="logo-image" alt="PaintBuddy Logo">
+            </div>
+
+            <!-- Welcome Banner -->
+            <div class="welcome-banner has-text-centered">
+                <h1 class="title is-2">About PaintBud</h1>
+                <p class="subtitle">
+                    PaintBud is my final project for my Back-End Programming course at university, but is also live and
+                    available for use!
+                </p>
+            </div>
+
+            <!-- Features -->
+            <div class="columns is-multiline mt-6">
+
+                <div class="column is-4">
+                    <div class="card feature-section">
+                        <div class="card-content has-text-centered">
+                            <span class="icon is-large has-text-primary">
+                                <i class="fa-solid fa-code fa-3x"></i>
+                            </span>
+                            <p class="title is-4 mt-4">What is the PaintBud Stack?</p>
+                            <p class="subtitle">PaintBud is written in Kotlin and uses Ktor, Firebase, Thymeleaf, &
+                                Bulma.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="column is-4">
+                    <div class="card feature-section">
+                        <div class="card-content has-text-centered">
+                            <span class="icon is-large has-text-info">
+                                <i class="fa-solid fa-robot fa-3x"></i>
+                            </span>
+                            <p class="title is-4 mt-4">Was AI used in this project?</p>
+                            <p class="subtitle">Yes, Claude 3.7 Sonnet was used to help scaffold & debug this app.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="column is-4">
+                    <div class="card feature-section">
+                        <div class="card-content has-text-centered">
+                            <span class="icon is-large has-text-success">
+                                <i class="fa-solid fa-person fa-3x"></i>
+                            </span>
+                            <p class="title is-4 mt-4">Who developed PaintBud?</p>
+                            <p class="subtitle">I did! I'm Ben Worton, a university student studying Software
+                                development.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="content has-text-centered">
+            <p>
+                <strong>PaintBud</strong> by Ben Worton.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Functions to open and close hamburger menu
+            const $navbarBurger = document.querySelector('.navbar-burger');
+            const $navbarMenu = document.querySelector('.navbar-menu');
+
+            $navbarBurger.addEventListener('click', () => {
+                $navbarBurger.classList.toggle('is-active');
+                $navbarMenu.classList.toggle('is-active');
+            });
+        });
+    </script>
+</body>
+
+</html>

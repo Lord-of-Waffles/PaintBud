@@ -41,4 +41,13 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation:3.1.2")
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.1.2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1") // Added core serialization dependency
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.7.3")
+    
+    // Logging - your code uses LoggerFactory
+    implementation("ch.qos.logback:logback-classic:1.4.11")
+    implementation("org.slf4j:slf4j-api:2.0.7")
+    
+
 }

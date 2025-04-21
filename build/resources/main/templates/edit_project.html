@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Project</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .paint-tag {
+            margin: 0.2rem;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .tab-content .tab-pane {
+            display: none;
+        }
+
+        .tab-content .is-active {
+            display: block;
+        }
+
+        .paint-selector {
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar is-primary" role="navigation" aria-label="main navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="/dashboard">
+                    <strong>PaintBud</strong>
+                </a>
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMenu">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+
+            <div id="navbarMenu" class="navbar-menu">
+                <div class="navbar-start">
+                    <a class="navbar-item" href="/dashboard">
+                        Dashboard
+                    </a>
+                    <a class="navbar-item is-active" href="/projects">
+                        Projects
+                    </a>
+                    <a class="navbar-item" href="/supplies">
+                        Supplies
+                    </a>
+                </div>
+
+                <div class="navbar-end">
+                    <div class="navbar-item" th:if="${username}">
+                        Welcome, <span class="ml-1" th:text="${username}">User</span>!
+                    </div>
+                    <div class="navbar-item">
+                        <a class="button is-light" href="/logout">
+                            Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <section class="section">
+        <div class="container">
+            <div class="columns is-centered">
+                <div class="column is-10">
+                    <div class="card">
+                        <header class="card-header has-background-primary">
+                            <p class="card-header-title has-text-white">
+                                Edit Project
+                            </p>
+                        </header>
+                        <div class="card-content">
+                            <!-- Error Message -->
+                            <div class="notification is-danger" th:if="${error}" role="alert">
+                                <span th:text="${message}">Error message</span>
+                            </div>
+
+                            <form th:if="${project}" method="post">
+                                <div class="field">
+                                    <label class="label" for="projectName">Project Name*</label>
+                                    <div class="control">
+                                        <input class="input" type="text" id="projectName" name="projectName"
+                                            th:value="${project.projectName}" required>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <label class="label" for="projectDescription">Project Description</label>
+                                    <div class="control">
+                                        <textarea class="textarea" id="projectDescription" name="projectDescription"
+                                            rows="4" th:text="${project.projectDescription}"></textarea>
+                                    </div>
+                                    <p class="help">A brief description of your project (optional)</p>
+                                </div>
+
+                                <!-- Project Paints Section -->
+                                <div class="field mt-5">
+                                    <label class="label">Project Paints</label>
+                                    <p class="help mb-3">Add the paints you're using for this miniature project</p>
+
+                                    <!-- Tabs for paint types -->
+                                    <div class="tabs">
+                                        <ul id="paint-tabs">
+                                            <li class="is-active"><a data-tab="base">Base</a></li>
+                                            <li><a data-tab="layer">Layer</a></li>
+                                            <li><a data-tab="dry">Dry</a></li>
+                                            <li><a data-tab="technical">Technical</a></li>
+                                            <li><a data-tab="contrast">Contrast</a></li>
+                                            <li><a data-tab="shade">Shade</a></li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- Paint tabs content -->
+                                    <div class="tab-content">
+                                        <!-- Base Paints Tab -->
+                                        <div id="base-tab" class="tab-pane is-active">
+                                            <div class="field">
+                                                <label class="label is-small">Selected Base Paints</label>
+                                                <div class="tags" id="base-paints-list">
+                                                    <!-- Fixed condition to check empty paint list -->
+                                                    <span class="has-text-grey"
+                                                        th:if="${projectPaints == null || !projectPaints.containsKey('base') || projectPaints.get('base').isEmpty()}">
+                                                        No base paints selected
+                                                    </span>
+                                                    <span
+                                                        th:if="${projectPaints != null && projectPaints.containsKey('base')}"
+                                                        th:each="paint : ${projectPaints.get('base')}"
+                                                        class="tag is-medium is-primary paint-tag">
+                                                        <span th:text="${paint.name}">Paint Name</span>
+                                                        <button type="button" class="delete is-small ml-2"
+                                                            th:attr="data-project=${project.projectId},data-type='base',data-paint-id=${paint.id}"
+                                                            onclick="removePaint(this)"></button>
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div class="field has-addons paint-selector">
+                                                <div class="control is-expanded">
+                                                    <div class="select is-fullwidth">
+
+                                                        <select id="base-paint-select">
+                                                            <option value="">Select a base paint...</option>
+                                                            <option
+                                                                th:if="${availablePaints != null && availablePaints.containsKey('base')}"
+                                                                th:each="paint : ${availablePaints.get('base')}"
+                                                                th:value="${paint.id}" th:text="${paint.name}">Paint
+                                                                Name</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="control">
+                                                    <button type="button" class="button is-info"
+                                                        th:attr="data-project=${project.projectId},data-type='base'"
+                                                        onclick="addPaint(this, 'base-paint-select')">
+                                                        <span class="icon is-small">
+                                                            <i class="fas fa-plus"></i>
+                                                        </span>
+                                                        <span>Add</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Layer Paints Tab -->
+                                        <div id="layer-tab" class="tab-pane">
+                                            <div class="field">
+                                                <label class="label is-small">Selected Layer Paints</label>
+                                                <div class="tags" id="layer-paints-list">
+                                                    <!-- Fixed condition to check empty paint list -->
+                                                    <span class="has-text-grey"
+                                                        th:if="${projectPaints == null || !projectPaints.containsKey('layer') || projectPaints.get('layer').isEmpty()}">
+                                                        No layer paints selected
+                                                    </span>
+                                                    <span
+                                                        th:if="${projectPaints != null && projectPaints.containsKey('layer')}"
+                                                        th:each="paint : ${projectPaints.get('layer')}"
+                                                        class="tag is-medium is-success paint-tag">
+                                                        <span th:text="${paint.name}">Paint Name</span>
+                                                        <button type="button" class="delete is-small ml-2"
+                                                            th:attr="data-project=${project.projectId},data-type='layer',data-paint-id=${paint.id}"
+                                                            onclick="removePaint(this)"></button>
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div class="field has-addons paint-selector">
+                                                <div class="control is-expanded">
+                                                    <div class="select is-fullwidth">
+                                                        <select id="layer-paint-select">
+                                                            <option value="">Select a layer paint...</option>
+                                                            <option
+                                                                th:if="${availablePaints != null && availablePaints.containsKey('layer')}"
+                                                                th:each="paint : ${availablePaints.get('layer')}"
+                                                                th:value="${paint.id}" th:text="${paint.name}">Paint
+                                                                Name</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="control">
+                                                    <button type="button" class="button is-info"
+                                                        th:attr="data-project=${project.projectId},data-type='layer'"
+                                                        onclick="addPaint(this, 'layer-paint-select')">
+                                                        <span class="icon is-small">
+                                                            <i class="fas fa-plus"></i>
+                                                        </span>
+                                                        <span>Add</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Dry Paints Tab -->
+                                        <div id="dry-tab" class="tab-pane">
+                                            <div class="field">
+                                                <label class="label is-small">Selected Dry Paints</label>
+                                                <div class="tags" id="dry-paints-list">
+                                                    <!-- Fixed condition to check empty paint list -->
+                                                    <span class="has-text-grey"
+                                                        th:if="${projectPaints == null || !projectPaints.containsKey('dry') || projectPaints.get('dry').isEmpty()}">
+                                                        No dry paints selected
+                                                    </span>
+                                                    <span
+                                                        th:if="${projectPaints != null && projectPaints.containsKey('dry')}"
+                                                        th:each="paint : ${projectPaints.get('dry')}"
+                                                        class="tag is-medium is-warning paint-tag">
+                                                        <span th:text="${paint.name}">Paint Name</span>
+                                                        <button type="button" class="delete is-small ml-2"
+                                                            th:attr="data-project=${project.projectId},data-type='dry',data-paint-id=${paint.id}"
+                                                            onclick="removePaint(this)"></button>
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div class="field has-addons paint-selector">
+                                                <div class="control is-expanded">
+                                                    <div class="select is-fullwidth">
+                                                        <select id="dry-paint-select">
+                                                            <option value="">Select a dry paint...</option>
+                                                            <option
+                                                                th:if="${availablePaints != null && availablePaints.containsKey('dry')}"
+                                                                th:each="paint : ${availablePaints.get('dry')}"
+                                                                th:value="${paint.id}" th:text="${paint.name}">Paint
+                                                                Name</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="control">
+                                                    <button type="button" class="button is-info"
+                                                        th:attr="data-project=${project.projectId},data-type='dry'"
+                                                        onclick="addPaint(this, 'dry-paint-select')">
+                                                        <span class="icon is-small">
+                                                            <i class="fas fa-plus"></i>
+                                                        </span>
+                                                        <span>Add</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Technical Paints Tab -->
+                                        <div id="technical-tab" class="tab-pane">
+                                            <div class="field">
+                                                <label class="label is-small">Selected Technical Paints</label>
+                                                <div class="tags" id="technical-paints-list">
+                                                    <!-- Fixed condition to check empty paint list -->
+                                                    <span class="has-text-grey"
+                                                        th:if="${projectPaints == null || !projectPaints.containsKey('technical') || projectPaints.get('technical').isEmpty()}">
+                                                        No technical paints selected
+                                                    </span>
+                                                    <span
+                                                        th:if="${projectPaints != null && projectPaints.containsKey('technical')}"
+                                                        th:each="paint : ${projectPaints.get('technical')}"
+                                                        class="tag is-medium is-info paint-tag">
+                                                        <span th:text="${paint.name}">Paint Name</span>
+                                                        <button type="button" class="delete is-small ml-2"
+                                                            th:attr="data-project=${project.projectId},data-type='technical',data-paint-id=${paint.id}"
+                                                            onclick="removePaint(this)"></button>
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div class="field has-addons paint-selector">
+                                                <div class="control is-expanded">
+                                                    <div class="select is-fullwidth">
+                                                        <select id="technical-paint-select">
+                                                            <option value="">Select a technical paint...</option>
+                                                            <option
+                                                                th:if="${availablePaints != null && availablePaints.containsKey('technical')}"
+                                                                th:each="paint : ${availablePaints.get('technical')}"
+                                                                th:value="${paint.id}" th:text="${paint.name}">Paint
+                                                                Name</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="control">
+                                                    <button type="button" class="button is-info"
+                                                        th:attr="data-project=${project.projectId},data-type='technical'"
+                                                        onclick="addPaint(this, 'technical-paint-select')">
+                                                        <span class="icon is-small">
+                                                            <i class="fas fa-plus"></i>
+                                                        </span>
+                                                        <span>Add</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Contrast Paints Tab -->
+                                        <div id="contrast-tab" class="tab-pane">
+                                            <div class="field">
+                                                <label class="label is-small">Selected Contrast Paints</label>
+                                                <div class="tags" id="contrast-paints-list">
+                                                    <!-- Fixed condition to check empty paint list -->
+                                                    <span class="has-text-grey"
+                                                        th:if="${projectPaints == null || !projectPaints.containsKey('contrast') || projectPaints.get('contrast').isEmpty()}">
+                                                        No contrast paints selected
+                                                    </span>
+                                                    <span
+                                                        th:if="${projectPaints != null && projectPaints.containsKey('contrast')}"
+                                                        th:each="paint : ${projectPaints.get('contrast')}"
+                                                        class="tag is-medium is-danger paint-tag">
+                                                        <span th:text="${paint.name}">Paint Name</span>
+                                                        <button type="button" class="delete is-small ml-2"
+                                                            th:attr="data-project=${project.projectId},data-type='contrast',data-paint-id=${paint.id}"
+                                                            onclick="removePaint(this)"></button>
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div class="field has-addons paint-selector">
+                                                <div class="control is-expanded">
+                                                    <div class="select is-fullwidth">
+                                                        <select id="contrast-paint-select">
+                                                            <option value="">Select a contrast paint...</option>
+                                                            <option
+                                                                th:if="${availablePaints != null && availablePaints.containsKey('contrast')}"
+                                                                th:each="paint : ${availablePaints.get('contrast')}"
+                                                                th:value="${paint.id}" th:text="${paint.name}">Paint
+                                                                Name</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="control">
+                                                    <button type="button" class="button is-info"
+                                                        th:attr="data-project=${project.projectId},data-type='contrast'"
+                                                        onclick="addPaint(this, 'contrast-paint-select')">
+                                                        <span class="icon is-small">
+                                                            <i class="fas fa-plus"></i>
+                                                        </span>
+                                                        <span>Add</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Shade Paints Tab -->
+                                        <div id="shade-tab" class="tab-pane">
+                                            <div class="field">
+                                                <label class="label is-small">Selected Shade Paints</label>
+                                                <div class="tags" id="shade-paints-list">
+                                                    <!-- Fixed condition to check empty paint list -->
+                                                    <span class="has-text-grey"
+                                                        th:if="${projectPaints == null || !projectPaints.containsKey('shade') || projectPaints.get('shade').isEmpty()}">
+                                                        No shade paints selected
+                                                    </span>
+                                                    <span
+                                                        th:if="${projectPaints != null && projectPaints.containsKey('shade')}"
+                                                        th:each="paint : ${projectPaints.get('shade')}"
+                                                        class="tag is-medium is-dark paint-tag">
+                                                        <span th:text="${paint.name}">Paint Name</span>
+                                                        <button type="button" class="delete is-small ml-2"
+                                                            th:attr="data-project=${project.projectId},data-type='shade',data-paint-id=${paint.id}"
+                                                            onclick="removePaint(this)"></button>
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div class="field has-addons paint-selector">
+                                                <div class="control is-expanded">
+                                                    <div class="select is-fullwidth">
+                                                        <select id="shade-paint-select">
+                                                            <option value="">Select a shade paint...</option>
+                                                            <option
+                                                                th:if="${availablePaints != null && availablePaints.containsKey('shade')}"
+                                                                th:each="paint : ${availablePaints.get('shade')}"
+                                                                th:value="${paint.id}" th:text="${paint.name}">Paint
+                                                                Name</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="control">
+                                                    <button type="button" class="button is-info"
+                                                        th:attr="data-project=${project.projectId},data-type='shade'"
+                                                        onclick="addPaint(this, 'shade-paint-select')">
+                                                        <span class="icon is-small">
+                                                            <i class="fas fa-plus"></i>
+                                                        </span>
+                                                        <span>Add</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Project metadata -->
+                                <div class="field mt-5">
+                                    <label class="label">Created</label>
+                                    <div class="control">
+                                        <div class="is-static">
+                                            <span th:if="${project.formattedCreatedAt}"
+                                                th:text="${project.formattedCreatedAt}">Jan 01, 2025 12:00</span>
+                                            <span th:unless="${project.formattedCreatedAt}"
+                                                th:text="${project.createdAt}">Jan 01, 2025 12:00</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="field" th:if="${project.updatedAt}">
+                                    <label class="label">Last Updated</label>
+                                    <div class="control">
+                                        <div class="is-static">
+                                            <span th:if="${project.formattedUpdatedAt}"
+                                                th:text="${project.formattedUpdatedAt}">Jan 01, 2025 12:00</span>
+                                            <span th:unless="${project.formattedUpdatedAt}"
+                                                th:text="${project.updatedAt}">Jan 01, 2025 12:00</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Form Actions -->
+                                <div class="field is-grouped mt-5">
+                                    <div class="control">
+                                        <a href="/projects" class="button is-light">Cancel</a>
+                                    </div>
+                                    <div class="control ml-auto">
+                                        <a th:href="'/delete_project/' + ${project.projectId}"
+                                            class="button is-danger mr-2"
+                                            onclick="return confirm('Are you sure you want to delete this project?')">
+                                            <span class="icon">
+                                                <i class="fas fa-trash"></i>
+                                            </span>
+                                            <span>Delete</span>
+                                        </a>
+                                    </div>
+                                    <div class="control">
+                                        <button type="submit" class="button is-primary">
+                                            <span class="icon">
+                                                <i class="fas fa-save"></i>
+                                            </span>
+                                            <span>Save Changes</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Hamburger menu toggle
+            const $navbarBurger = document.querySelector('.navbar-burger');
+            const $navbarMenu = document.querySelector('.navbar-menu');
+
+            $navbarBurger.addEventListener('click', () => {
+                $navbarBurger.classList.toggle('is-active');
+                $navbarMenu.classList.toggle('is-active');
+            });
+
+            // Tab switching functionality
+            const tabs = document.querySelectorAll('#paint-tabs li');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('is-active'));
+                    tab.classList.add('is-active');
+
+                    const targetTab = tab.querySelector('a').getAttribute('data-tab');
+                    document.querySelectorAll('.tab-pane').forEach(pane => {
+                        pane.classList.remove('is-active');
+                    });
+                    document.getElementById(targetTab + '-tab').classList.add('is-active');
+                });
+            });
+        });
+
+        // Function to add a paint to the project
+        function addPaint(button, selectId) {
+            const select = document.getElementById(selectId);
+            const paintId = select.value;
+            const paintName = select.options[select.selectedIndex].text;
+
+            if (!paintId) {
+                return; // No paint selected
+            }
+
+            const projectId = button.getAttribute('data-project');
+            const paintType = button.getAttribute('data-type');
+
+            // Send AJAX request to add paint
+            fetch(`/api/project/${projectId}/add-paint`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `paintType=${paintType}&paintId=${paintId}`
+            })
+                .then(response => {
+                    if (response.ok) {
+                        // Add paint tag to the UI
+                        const paintsList = document.getElementById(`${paintType}-paints-list`);
+
+                        // Remove "no paints selected" message if present
+                        const noSelection = paintsList.querySelector('.has-text-grey');
+                        if (noSelection) {
+                            noSelection.remove();
+                        }
+
+                        // Create tag element with different colors based on paint type
+                        let tagClass = 'is-primary'; // default
+                        switch (paintType) {
+                            case 'layer': tagClass = 'is-success'; break;
+                            case 'dry': tagClass = 'is-warning'; break;
+                            case 'technical': tagClass = 'is-info'; break;
+                            case 'contrast': tagClass = 'is-danger'; break;
+                            case 'shade': tagClass = 'is-dark'; break;
+                        }
+
+                        const tag = document.createElement('span');
+                        tag.className = `tag is-medium ${tagClass} paint-tag`;
+                        tag.innerHTML = `
+                        <span>${paintName}</span>
+                        <button type="button" class="delete is-small ml-2" 
+                            data-project="${projectId}" 
+                            data-type="${paintType}" 
+                            data-paint-id="${paintId}" 
+                            onclick="removePaint(this)"></button>
+                    `;
+
+                        paintsList.appendChild(tag);
+
+                        // Reset select
+                        select.value = '';
+                    } else {
+                        alert('Failed to add paint. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error adding paint:', error);
+                    alert('An error occurred. Please try again.');
+                });
+        }
+
+        // Function to remove a paint from the project
+        function removePaint(button) {
+            const projectId = button.getAttribute('data-project');
+            const paintType = button.getAttribute('data-type');
+            const paintId = button.getAttribute('data-paint-id');
+
+            // Send AJAX request to remove paint
+            fetch(`/api/project/${projectId}/remove-paint`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `paintType=${paintType}&paintId=${paintId}`
+            })
+                .then(response => {
+                    if (response.ok) {
+                        // Remove paint tag from UI
+                        const paintTag = button.closest('.paint-tag');
+                        paintTag.remove();
+
+                        // Check if there are no more paints of this type
+                        const paintsList = document.getElementById(`${paintType}-paints-list`);
+                        if (paintsList.children.length === 0) {
+                            const noSelection = document.createElement('span');
+                            noSelection.className = 'has-text-grey';
+                            noSelection.textContent = `No ${paintType} paints selected`;
+                            paintsList.appendChild(noSelection);
+                        }
+                    } else {
+                        alert('Failed to remove paint. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error removing paint:', error);
+                    alert('An error occurred. Please try again.');
+                });
+        }
+    </script>
+</body>
+
+</html>

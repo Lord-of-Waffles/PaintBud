@@ -33,14 +33,17 @@ fun Application.module() {
         jackson()
     }
 
-    install(Sessions) {
-        cookie<UserSession>("USER_SESSION") {
-            cookie.path = "/"
-            cookie.maxAgeInSeconds = 3600
-            cookie.httpOnly = true
-            cookie.secure = false
-        }
+install(Sessions) {
+    cookie<UserSession>("user_session") {
+        cookie.path = "/"
+        cookie.maxAgeInSeconds = 60 * 60 * 24 // 24 hours
+        cookie.secure = false // Set to true in production
+        cookie.httpOnly = true
+        
+        // Remove the transform line completely
+        // transform(SessionTransportTransformerEncrypt(...))
     }
+}
 
     // Install Authentication before routing
     install(Authentication) {

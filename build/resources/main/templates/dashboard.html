@@ -3,25 +3,84 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
-    <link rel="stylesheet" href="/static/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .stat-card {
+            transition: transform 0.3s;
+            border-radius: 6px;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .recent-card {
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .recent-card:hover {
+            border-left: 4px solid #3273dc;
+            background-color: rgba(50, 115, 220, 0.05);
+        }
+
+        .welcome-banner {
+            background-color: #f5f5f5;
+            padding: 2rem;
+            border-radius: 6px;
+            margin-bottom: 2rem;
+        }
+    </style>
 </head>
 
 <body>
+    <!-- Navbar -->
     <nav class="navbar is-primary" role="navigation" aria-label="main navigation">
-        <div class="navbar-brand">
-            <img src="/static/media/logo.png" style="
-            border-radius: 2%;
-            max-width: 10%;
-            max-height: auto;">
+        <div class="container">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="/dashboard">
+                    <strong>Project Manager</strong>
+                </a>
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMenu">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
 
-        </div>
+            <div id="navbarMenu" class="navbar-menu">
+                <div class="navbar-start">
+                    <a class="navbar-item is-active" href="/dashboard">
+                        Dashboard
+                    </a>
+                    <a class="navbar-item" href="/projects">
+                        Projects
+                    </a>
+                    <a class="navbar-item" href="/wishlist">
+                        Wishlist
+                    </a>
+                </div>
 
-        <div class="navbar-menu">
-            <div class="navbar-end">
-                <div class="navbar-item">
-                    <a href="/logout" class="button is-light">Logout</a>
+                <div class="navbar-end">
+                    <div class="navbar-item" th:if="${username}">
+                        Welcome, <span class="ml-1" th:text="${username}">User</span>!
+                    </div>
+                    <div class="navbar-item">
+                        <a class="button is-light" href="/logout">
+                            Logout
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -29,23 +88,116 @@
 
     <section class="section">
         <div class="container">
-            <h1 class="title">Welcome back to PaintBud!</h1>
-            <p class="subtitle">You are logged in as <span th:text="${username}">User</span></p>
+            <div class="welcome-banner">
+                <h1 class="title">Welcome to Your Project Dashboard!</h1>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="columns is-centered">
+                <div class=" column is-centered">
+                    <div class="card stat-card has-background-primary has-text-white">
+                        <div class="card-content has-text-centered">
+                            <i class="fas fa-project-diagram card-icon"></i>
+                            <p class="title is-5 has-text-white">Total Projects</p>
+                            <p class="title is-2 has-text-white mb-0"
+                                th:text="${projects != null ? projects.size() : 0}">0
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="columns mb-5">
+                <div class="column is-12">
+                    <div class="card">
+                        <header class="card-header">
+                            <p class="card-header-title">Quick Actions</p>
+                        </header>
+                        <div class="card-content">
+                            <div class="columns is-mobile is-multiline has-text-centered">
+                                <div class="column is-4">
+                                    <a href="/add_project" class="button is-outlined is-primary is-fullwidth is-medium">
+                                        <span class="icon">
+                                            <i class="fas fa-plus-circle"></i>
+                                        </span>
+                                        <span>Add Project</span>
+                                    </a>
+                                </div>
+                                <div class="column is-4">
+                                    <a href="/add_wishlist"
+                                        class="button is-outlined is-success is-fullwidth is-medium">
+                                        <span class="icon">
+                                            <i class="fas fa-plus-circle"></i>
+                                        </span>
+                                        <span>Add to Wishlist</span>
+                                    </a>
+                                </div>
+                                <div class="column is-4">
+                                    <a href="/projects" class="button is-outlined is-info is-fullwidth is-medium">
+                                        <span class="icon">
+                                            <i class="fas fa-list"></i>
+                                        </span>
+                                        <span>View All Projects</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="columns">
+                <!-- Recent Projects -->
+                <div class="column is-6">
+                    <div class="card">
+                        <header class="card-header">
+                            <p class="card-header-title">Recent Projects</p>
+                            <a href="/projects" class="card-header-icon">
+                                <button class="button is-small is-primary">View All</button>
+                            </a>
+                        </header>
+                        <div class="card-content p-0">
+                            <div th:if="${projects != null && !projects.isEmpty()}">
+                                <div th:each="project, iterStat : ${projects}" th:if="${iterStat.index < 5}"
+                                    class="recent-card p-3 has-border-bottom">
+                                    <h6 class="is-size-6 mb-1">
+                                        <a th:href="@{'/edit_project/' + ${project.projectId}}"
+                                            th:text="${project.projectName}">
+                                            Project Name
+                                        </a>
+                                    </h6>
+                                    <small class="has-text-grey">
+                                        Created: <span
+                                            th:text="${#dates.format(new java.util.Date(project.createdAt), 'MMM dd, yyyy')}">
+                                            Jan 01, 2025
+                                        </span>
+                                    </small>
+                                </div>
+                            </div>
+                            <div th:if="${projects == null || projects.isEmpty()}" class="p-3">
+                                <p class="has-text-grey mb-0">No projects found. <a href="/add_project">Create your
+                                        first project</a>.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
-    <section class="section">
-        <div class="columns is-centered">
-            <div class="column">
-                <button class="button is-primary is-large is-fullwidth">Projects</button>
-            </div>
-            <div class="column">
-                <button class="button is-primary is-large is-fullwidth">Supplies</button>
-            </div>
-            <div class="column">
-                <button class="button is-primary is-large is-fullwidth">Colour Palette Generator</button>
-            </div>
-        </div>
-    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Functions to open and close hamburger menu
+            const $navbarBurger = document.querySelector('.navbar-burger');
+            const $navbarMenu = document.querySelector('.navbar-menu');
+
+            $navbarBurger.addEventListener('click', () => {
+                $navbarBurger.classList.toggle('is-active');
+                $navbarMenu.classList.toggle('is-active');
+            });
+        });
+    </script>
 </body>
 
 </html>
