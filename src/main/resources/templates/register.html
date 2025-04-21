@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xlmns:th="https://thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Create an account</title>
+    <link rel="stylesheet" href="/static/css/bulma.min.css">
+</head>
+
+<body>
+    <section class="section">
+        <div class="container">
+            <div class="columns is-centered">
+                <div class="column is-one-third">
+                    <h1 class="title has-text-centered">Create an Account</h1>
+
+                    <div th:if="${error}" class="error-message">
+                        <p th:text="${message}">Error message</p>
+                    </div>
+
+                    <form action="/register" method="post">
+                        <div class="field">
+                            <label for="username">Username</label>
+                            <input type="text" id="username" name="username" class="input" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" class="input" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" class="input" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="confirmPassword">Confirm Password</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" class="input" required>
+                        </div>
+
+                        <div class="field">
+                            <button type="submit" class="button is-primary is-fullwidth">Register</button>
+                        </div>
+
+
+                        <div class="form-footer">
+                            <p>Already have an account? <a href="/login">Login</a></p>
+                        </div>
+                    </form>
+                    <br>
+                    <div>
+                        <a href="/index" class="button is-link is-fullwidth">Back to Main Page</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

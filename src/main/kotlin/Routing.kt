@@ -7,6 +7,9 @@ import io.ktor.server.routing.*
 import io.ktor.http.*
 import io.ktor.server.thymeleaf.*
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.sessions.*
+import io.ktor.server.auth.*
+import com.example.model.UserSession
 import com.example.services.FirebaseService
 
 fun Application.configureRouting() {
@@ -27,6 +30,155 @@ fun Application.configureRouting() {
         get("/index") {
             call.respond(ThymeleafContent("index", mapOf("name" to "Ktor")))
         }
+
+        // login/register
+
+        get("/login") {
+            //check if already logged in
+            call.sessions.get<UserSession>()?.let {
+                if (it.isLoggedIn) {
+                    call.respondRedirect("/dashboard")
+                    return@get
+                }
+            }
+            call.respond(ThymeleafContent("login", mapOf("name" to "Ktor")))
+        }
+
+        post("/login") {
+            val postParameters = call.receiveParameters()
+            val username = postParameters["username"] ?: ""
+            val password = postParameters["password"] ?: ""
+            // Replace with actual authentication logic
+            if (username == "admin" && password == "password") {
+                // Create and store session
+                call.sessions.set(UserSession(
+                    userId = "user-123", // In real app, use actual user ID
+                    username = username
+                ))
+                call.respondRedirect("/dashboard")
+            } else {
+                call.respond(ThymeleafContent("login", mapOf(
+                    "message" to "Invalid credentials",
+                    "error" to true
+                )))
+            }
+        }
+
+        // Protected routes (requiring authentication)
+        get("/dashboard") {
+            val userSession = call.sessions.get<UserSession>()
+                if (userSession != null) {
+                    call.respond(ThymeleafContent("dashboard", mapOf(
+                        "username" to userSession.username
+                        )))
+                    } else {
+                        call.respondRedirect("/login")
+                    }
+                }
+                
+                
+        // Logout route
+        get("/logout") {
+            call.sessions.clear<UserSession>()
+            call.respondRedirect("/login")
+        }
+
+        // registering
+        get("/register") {
+            call.sessions.get<UserSession>()?.let {
+                if (it.isLoggedIn) {
+                    call.respondRedirect("/dashboard")
+                    return@get
+                }
+            }
+            call.respond(ThymeleafContent("register", mapOf()))
+        }
+
+        post("/register") {
+            val postParameters = call.receiveParameters()
+            val username = postParameters["username"] ?: ""
+            val email = postParameters["email"] ?: ""
+            val password = postParameters["password"] ?: ""
+            val confirmPassword = postParameters["confirmPassword"] ?: ""
+
+            when {
+                username.isBlank() -> {
+                    call.respond(ThymeleafContent("register", mapOf(
+                        "error" to true,
+                        "message" to "Username cannot be empty"
+                    )))
+                    return@post
+                }
+                email.isBlank() -> {
+                    call.respond(ThymeleafContent("register", mapOf(
+                        "error" to true,
+                        "message" to "Email cannot be empty"
+                    )))
+                    return@post
+                }
+                password.isBlank() -> {
+                    call.respond(ThymeleafContent("register", mapOf(
+                        "error" to true,
+                        "message" to "Password cannot be empty"
+                    )))
+                    return@post
+                }
+                password != confirmPassword -> {
+                    call.respond(ThymeleafContent("register", mapOf(
+                        "error" to true,
+                        "message" to "Passwords do not match"
+                    )))
+                    return@post
+                }
+            }
+
+            try {
+                //check if username already exists
+                val userExists = firebaseService.readData("users/$username") != null
+
+                if (userExists) {
+                    call.respond(ThymeleafContent("register", mapOf(
+                        "error" to true,
+                        "message" to "Username already exists, please choose another"
+                    )))
+                    return@post
+                }
+
+                // create user
+                // to-do add hashing to passwords
+                val userId = firebaseService.generateKey("users")
+                val userData = mapOf(
+                    "username" to username,
+                    "email" to email,
+                    //add hashing
+                    "password" to password,
+                    "createdAt" to System.currentTimeMillis()
+                )
+
+                val success = firebaseService.writeData("users/$userId", userData)
+
+                if (success) {
+                    // create user sesh
+                    call.sessions.set(UserSession(
+                        userId = userId,
+                        username = username,
+                        isLoggedIn = true
+                    ))
+                    call.respondRedirect("/dashboard")
+                } else {
+                    call.respond(ThymeleafContent("register", mapOf(
+                        "error" to true,
+                        "message" to "Failed to create account. Please try again."
+                    )))
+                }
+            } catch (e: Exception) {
+                call.respond(ThymeleafContent("register", mapOf(
+                    "error" to true,
+                    "message" to "An error occured: ${e.message}"
+                )))
+            }
+        }
+
 
         // Firebase Realtime Database API routes
         route("/api") {

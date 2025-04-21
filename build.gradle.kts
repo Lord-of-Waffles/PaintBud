@@ -1,7 +1,7 @@
-
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ktor)
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10" // Added serialization plugin
 }
 
 group = "com.example"
@@ -26,14 +26,19 @@ dependencies {
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit)
 
+    // user sessions
+    implementation("io.ktor:ktor-server-sessions:3.1.2")
+    implementation("io.ktor:ktor-server-auth:3.1.2")
+
     // Thymeleaf
     implementation("io.ktor:ktor-server-thymeleaf:3.1.2")
 
     // Firebase
-
     implementation("com.google.firebase:firebase-admin:9.1.1")
 
     // Kotlinx serialization
     implementation("io.ktor:ktor-serialization-jackson:3.1.2")
     implementation("io.ktor:ktor-server-content-negotiation:3.1.2")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.1.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1") // Added core serialization dependency
 }

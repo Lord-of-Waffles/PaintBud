@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login</title>
+    <link rel="stylesheet" href="/static/css/bulma.min.css">
+</head>
+
+<body>
+    <section class="section">
+        <div class="container">
+            <div class="columns is-centered">
+                <div class="column is-one-third">
+                    <h1 class="title has-text-centered">Login</h1>
+
+                    <div th:if="${error}" class="notification is-danger">
+                        <p th:text="${message}">Error message</p>
+                    </div>
+
+                    <form method="post" action="/login">
+                        <div class="field">
+                            <label class="label">Username</label>
+                            <div class="control">
+                                <input class="input" type="text" name="username" placeholder="Username">
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Password</label>
+                            <div class="control">
+                                <input class="input" type="password" name="password" placeholder="Password">
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <div class="control">
+                                <button class="button is-primary is-fullwidth">Login</button>
+                            </div>
+                        </div>
+                        <div class="form-footer">
+                            <p>Don't have an account? <a href="/register">Create an account</a></p>
+                        </div>
+                    </form>
+                    <br>
+                    <div>
+                        <a href="/index" class="button is-link is-fullwidth">Back to Main Page</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

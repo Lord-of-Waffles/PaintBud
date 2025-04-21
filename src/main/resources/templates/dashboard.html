@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/static/css/bulma.min.css">
+</head>
+
+<body>
+    <nav class="navbar is-primary" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <img src="/static/media/logo.png" style="
+            border-radius: 2%;
+            max-width: 10%;
+            max-height: auto;">
+
+        </div>
+
+        <div class="navbar-menu">
+            <div class="navbar-end">
+                <div class="navbar-item">
+                    <a href="/logout" class="button is-light">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="section">
+        <div class="container">
+            <h1 class="title">Welcome back to PaintBud!</h1>
+            <p class="subtitle">You are logged in as <span th:text="${username}">User</span></p>
+        </div>
+    </section>
+    <section class="section">
+        <div class="columns is-centered">
+            <div class="column">
+                <button class="button is-primary is-large is-fullwidth">Projects</button>
+            </div>
+            <div class="column">
+                <button class="button is-primary is-large is-fullwidth">Supplies</button>
+            </div>
+            <div class="column">
+                <button class="button is-primary is-large is-fullwidth">Colour Palette Generator</button>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

@@ -8,6 +8,13 @@ import io.ktor.server.application.*
 import io.ktor.server.thymeleaf.*
 import io.ktor.server.routing.*
 import io.ktor.server.http.content.*
+import io.ktor.server.sessions.*
+import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.Serializable
+import io.ktor.server.auth.*
+import io.ktor.server.response.*
+import io.ktor.util.*
+import com.example.model.UserSession
 import io.ktor.serialization.jackson.*
 import io.ktor.server.plugins.contentnegotiation.*
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver
@@ -21,13 +28,41 @@ fun Application.module() {
     // Initialize Firebase
     configureFirebase()
 
-    routing {
-        static("/static") {
-            resources("static")
+    // Install content negotiation for JSON handling
+    install(ContentNegotiation) {
+        jackson()
+    }
+
+    install(Sessions) {
+        cookie<UserSession>("USER_SESSION") {
+            cookie.path = "/"
+            cookie.maxAgeInSeconds = 3600
+            cookie.httpOnly = true
+            cookie.secure = false
         }
     }
 
-    // Install existing Thymeleaf templating
+    // Install Authentication before routing
+    install(Authentication) {
+        form("auth-form") {
+            userParamName = "username"
+            passwordParamName = "password"
+            validate { credentials ->
+                // replace code below with actual validation when db is set up
+                if (credentials.name == "admin" && credentials.password == "password") {
+                    UserIdPrincipal(credentials.name)
+                } else {
+                    null
+                }
+            } 
+            challenge {
+                // redirect to login page if auth fails
+                call.respondRedirect("/login")
+            }
+        }
+    }
+
+    // Install Thymeleaf 
     install(Thymeleaf) {
         setTemplateResolver(ClassLoaderTemplateResolver().apply {
             prefix = "templates/"
@@ -36,12 +71,14 @@ fun Application.module() {
         })
     }
 
-    // Install content negotiation for JSON handling
-    install(ContentNegotiation) {
-        jackson()
+    // Configure static resources
+    routing {
+        static("/static") {
+            resources("static")
+        }
     }
 
-    // Configure routing
+    // Configure routing AFTER all plugins are installed
     configureRouting()
 }
 
