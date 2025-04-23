@@ -11,7 +11,6 @@ class UserRepository(private val firebaseService: FirebaseService) {
      * @return User object if found, null otherwise
      */
     suspend fun findByUsername(username: String): User? {
-        // Implementation using firebaseService.readData() instead of direct database access
         val users = firebaseService.readData("users") as? Map<String, Any> ?: return null
         
         // Find user with matching username

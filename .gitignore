@@ -1,0 +1,28 @@
+# Kotlin / Java / Gradle
+/build/
+/.gradle/
+/out/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+
+# VS Code (if applicable)
+.vscode/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Firebase config (DO NOT commit secrets!)
+fb_prkey.json
+*.keystore
+
+# Environment variables (if you're using dotenv or similar)
+.env
+
+# Ktor-specific (nothing major beyond JVM stuff, unless you have custom files)

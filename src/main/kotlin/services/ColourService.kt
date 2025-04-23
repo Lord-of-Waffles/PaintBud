@@ -2,7 +2,6 @@ package com.example.services
 
 import kotlin.random.Random
 
-// This needs to be a concrete class, not abstract
 class ColourService {
     fun generateRandomPalette(count: Int = 5): List<String> {
         val colors = mutableListOf<String>()
@@ -28,7 +27,7 @@ class ColourService {
             val g = Integer.parseInt(baseColor.substring(3, 5), 16)
             val b = Integer.parseInt(baseColor.substring(5, 7), 16)
             
-            // Convert to HSL (simplified)
+            // Convert to HSL (
             val hsl = rgbToHsl(r, g, b)
             
             // Generate colors with slightly different hues
