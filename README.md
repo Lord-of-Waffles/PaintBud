@@ -15,4 +15,4 @@
 - PaintBud is live right now at: https://paintbud-a6edfd9853fe.herokuapp.com/
 
 ## Want to see a demo of PaintBud?
-- You can find one here: https://studio.youtube.com/video/vGMOSKh39sc/edit
+- You can find one here: https://youtu.be/vGMOSKh39sc
