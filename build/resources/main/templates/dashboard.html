@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/bulma.min.css">
+    <link rel=" stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .stat-card {
             transition: transform 0.3s;
@@ -50,7 +50,7 @@
         <div class="container">
             <div class="navbar-brand">
                 <a class="navbar-item" href="/dashboard">
-                    <strong>Project Manager</strong>
+                    <strong>PaintBud</strong>
                 </a>
                 <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMenu">
                     <span aria-hidden="true"></span>
@@ -69,6 +69,9 @@
                     </a>
                     <a class="navbar-item" href="/wishlist">
                         Wishlist
+                    </a>
+                    <a class="navbar-item" href="/palette">
+                        Colour Palette Generator
                     </a>
                 </div>
 
@@ -162,16 +165,13 @@
                                 <div th:each="project, iterStat : ${projects}" th:if="${iterStat.index < 5}"
                                     class="recent-card p-3 has-border-bottom">
                                     <h6 class="is-size-6 mb-1">
-                                        <a th:href="@{'/edit_project/' + ${project.projectId}}"
+                                        <a th:href="${'/edit_project/' + project.projectId}"
                                             th:text="${project.projectName}">
                                             Project Name
                                         </a>
                                     </h6>
                                     <small class="has-text-grey">
-                                        Created: <span
-                                            th:text="${#dates.format(new java.util.Date(project.createdAt), 'MMM dd, yyyy')}">
-                                            Jan 01, 2025
-                                        </span>
+                                        Created: <span th:text="${project.formattedDate}">Jan 01, 2025</span>
                                     </small>
                                 </div>
                             </div>

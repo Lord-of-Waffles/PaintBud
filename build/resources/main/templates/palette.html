@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Colour Palette Generator</title>
+    <link rel="stylesheet" href="/static/css/bulma.min.css">
+    <style>
+        .palette-container {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .color-swatch {
+            width: 150px;
+            height: 150px;
+            margin: 10px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .color-swatch p {
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        section {
+            padding: 2rem;
+            text-align: center;
+        }
+
+        #randomBtn {
+            font-size: 1.2rem;
+            padding: 0.75rem 1.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar is-primary" role="navigation" aria-label="main navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="/dashboard">
+                    <strong>PaintBud</strong>
+                </a>
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMenu">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+
+            <div id="navbarMenu" class="navbar-menu">
+                <div class="navbar-start">
+                    <a class="navbar-item is-active" href="/dashboard">
+                        Dashboard
+                    </a>
+                    <a class="navbar-item" href="/projects">
+                        Projects
+                    </a>
+                    <a class="navbar-item" href="/wishlist">
+                        Wishlist
+                    </a>
+                </div>
+
+                <div class="navbar-end">
+                    <div class="navbar-item" th:if="${username}">
+                        Welcome, <span class="ml-1" th:text="${username}">User</span>!
+                    </div>
+                    <div class="navbar-item">
+                        <a class="button is-light" href="/logout">
+                            Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="section">
+        <div class="container">
+            <h1 class="title">Colour Palette Generator</h1>
+            <p class="subtitle">Create random colour palettes for your projects</p>
+
+            <div class="buttons is-centered mb-5">
+                <button id="randomBtn" class="button is-primary is-large">
+                    <span class="icon">
+                        <i class="fas fa-random"></i>
+                    </span>
+                    <span>Generate Random Palette</span>
+                </button>
+            </div>
+
+            <div class="palette-container" id="palette">
+                <!-- Colors will appear here -->
+            </div>
+        </div>
+    </section>
+    <script>
+        document.getElementById('randomBtn').addEventListener('click', async () => {
+            const response = await fetch('/api/palettes/random');
+            const data = await response.json();
+
+            const paletteDiv = document.getElementById('palette');
+            paletteDiv.innerHTML = '';
+
+            // Change this line from data.colors to data.colours to match your API
+            data.colours.forEach(color => {
+                const swatch = document.createElement('div');
+                swatch.className = 'color-swatch';
+                swatch.style.backgroundColor = color;
+
+                const colorText = document.createElement('p');
+                colorText.textContent = color;
+                swatch.appendChild(colorText);
+
+                paletteDiv.appendChild(swatch);
+            });
+        });
+    </script>
+</body>
+
+</html>

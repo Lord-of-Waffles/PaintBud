@@ -19,10 +19,16 @@ import io.ktor.serialization.jackson.*
 import io.ktor.server.plugins.contentnegotiation.*
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver
 import java.io.FileInputStream
+import com.example.services.ColourService
+import com.example.services.PaintColourService
+import com.example.services.configurePaintColourService
+
 
 fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)
 }
+
+val ColourServiceKey = AttributeKey<ColourService>("ColourService")
 
 fun Application.module() {
     // Initialize Firebase
@@ -33,15 +39,19 @@ fun Application.module() {
         jackson()
     }
 
+    configurePaintColourService()
+
+
+val colourService = ColourService()
+attributes.put(ColourServiceKey, colourService)
+
+
 install(Sessions) {
     cookie<UserSession>("user_session") {
         cookie.path = "/"
         cookie.maxAgeInSeconds = 60 * 60 * 24 // 24 hours
         cookie.secure = false // Set to true in production
         cookie.httpOnly = true
-        
-        // Remove the transform line completely
-        // transform(SessionTransportTransformerEncrypt(...))
     }
 }
 
@@ -84,6 +94,7 @@ install(Sessions) {
     // Configure routing AFTER all plugins are installed
     configureRouting()
 }
+
 
 fun Application.configureFirebase() {
     try {

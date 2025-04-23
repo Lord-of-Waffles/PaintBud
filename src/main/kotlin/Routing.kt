@@ -17,6 +17,11 @@ import com.example.utils.PasswordUtils
 import kotlinx.coroutines.delay
 import kotlin.random.Random
 import org.slf4j.LoggerFactory
+import com.example.services.ColourService
+import com.example.services.PaintColourService
+import com.example.services.PaintColourServiceKey
+import com.example.services.configurePaintColourService
+
 
 // Move these functions outside of the routing block
 suspend fun loadPaints(firebaseService: FirebaseService): Map<String, List<Map<String, Any>>> {
@@ -98,6 +103,7 @@ suspend fun loadProjectPaints(
 
 fun Application.configureRouting() {
     val logger = LoggerFactory.getLogger("Routing")
+    val colourService = attributes[ColourServiceKey]
 
     routing {
         val firebaseService = FirebaseService()
@@ -186,9 +192,20 @@ fun Application.configureRouting() {
                     val userProjectsPath = "users/${userSession.userId}/projects"
                     val userProjects = firebaseService.readData(userProjectsPath) as? Map<String, Any> ?: emptyMap()
                     
-                    // Convert the map to a list of projects
+                    // Convert the map to a list of projects WITH FORMATTED DATES (just like in the projects route)
                     val projectsList = userProjects.map { (_, value) -> 
-                        value as Map<String, Any>
+                        val projectMap = value as Map<String, Any>
+                        // Create a mutable map from the project data
+                        val mutableProject = projectMap.toMutableMap()
+                        
+                        // Format the date
+                        val createdAt = projectMap["createdAt"] as? Long ?: 0L
+                        val formattedDate = java.text.SimpleDateFormat("MMM dd, yyyy").format(java.util.Date(createdAt))
+                        
+                        // Add the formatted date to the project
+                        mutableProject["formattedDate"] = formattedDate
+                        
+                        mutableProject
                     }.sortedByDescending { it["createdAt"] as Long }
                     
                     // Create activity list (combine recent projects and supplies)
@@ -203,7 +220,6 @@ fun Application.configureRouting() {
                             "timestamp" to (project["createdAt"] ?: 0L)
                         ))
                     }
-
                     
                     // Sort activity by timestamp (most recent first)
                     val sortedActivity = recentActivity.sortedByDescending { it["timestamp"] as Long }
@@ -374,50 +390,99 @@ fun Application.configureRouting() {
         }
 
         // Implementation for listing projects on the projects page
-        get("/projects") {
-            // Check if user is logged in
-            val userSession = call.sessions.get<UserSession>()
-            if (userSession == null || !userSession.isLoggedIn) {
-                call.respondRedirect("/login")
-                return@get
+// Updated projects route to work with existing Firebase data structure
+get("/projects") {
+    // Check if user is logged in
+    val userSession = call.sessions.get<UserSession>()
+    if (userSession == null || !userSession.isLoggedIn) {
+        call.respondRedirect("/login")
+        return@get
+    }
+    
+    try {
+        // Get user's projects
+        val userProjectsPath = "users/${userSession.userId}/projects"
+        val userProjects = firebaseService.readData(userProjectsPath) as? Map<String, Any> ?: emptyMap()
+        
+        // Get the PaintColourService
+        val paintColourService = application.attributes[PaintColourServiceKey]
+        
+        // Load all paints data
+        val paintsData = firebaseService.readData("paints") as? Map<String, Any> ?: emptyMap()
+        
+        // Convert the map to a list of projects with formatted dates and paint data
+        val projectsList = userProjects.map { (projectId, value) -> 
+            val projectMap = value as Map<String, Any>
+            // Create a mutable map from the project data
+            val mutableProject = projectMap.toMutableMap()
+            
+            // Format the date
+            val createdAt = projectMap["createdAt"] as? Long ?: 0L
+            val formattedDate = java.text.SimpleDateFormat("MMM dd, yyyy").format(java.util.Date(createdAt))
+            
+            // Add the formatted date to the project
+            mutableProject["formattedDate"] = formattedDate
+            
+            // Process project paints
+            val projectPaints = mutableMapOf<String, List<Map<String, Any>>>()
+            var totalPaintCount = 0
+            
+            // Get project paints if available
+            val projectPaintsData = (projectMap["paints"] as? Map<String, Any>) ?: emptyMap()
+            
+            // Process each paint type
+            for (paintType in listOf("base", "layer", "contrast", "dry", "shade", "technical")) {
+                val typePaints = (projectPaintsData[paintType] as? Map<String, Any>) ?: emptyMap()
+                
+                if (typePaints.isNotEmpty()) {
+                    // Get array of this paint type from the database
+                    val paintsArray = (paintsData[paintType] as? List<*>) ?: emptyList<String>()
+                    
+                    // Process each paint in this type
+                    val paintsOfType = typePaints.keys.mapNotNull { paintIndex ->
+                        val index = paintIndex.toIntOrNull() ?: return@mapNotNull null
+                        if (index < paintsArray.size) {
+                            val paintName = paintsArray[index] as? String ?: return@mapNotNull null
+                            val paintColour = paintColourService.getPaintColour(paintName, paintType)
+                            
+                            mapOf(
+                                "id" to paintIndex,
+                                "name" to paintName,
+                                "colour" to paintColour
+                            )
+                        } else null
+                    }
+                    
+                    if (paintsOfType.isNotEmpty()) {
+                        projectPaints[paintType] = paintsOfType
+                        totalPaintCount += paintsOfType.size
+                    }
+                }
             }
             
-            try {
-                // Get user's projects
-                val userProjectsPath = "users/${userSession.userId}/projects"
-                val userProjects = firebaseService.readData(userProjectsPath) as? Map<String, Any> ?: emptyMap()
-                
-                // Convert the map to a list of projects with formatted dates
-                val projectsList = userProjects.map { (_, value) -> 
-                    val projectMap = value as Map<String, Any>
-                    // Create a mutable map from the project data
-                    val mutableProject = projectMap.toMutableMap()
-                    
-                    // Format the date
-                    val createdAt = projectMap["createdAt"] as? Long ?: 0L
-                    val formattedDate = java.text.SimpleDateFormat("MMM dd, yyyy").format(java.util.Date(createdAt))
-                    
-                    // Add the formatted date to the project
-                    mutableProject["formattedDate"] = formattedDate
-                    
-                    mutableProject
-                }
-                
-                // Sort projects by creation date (newest first)
-                val sortedProjects = projectsList.sortedByDescending { it["createdAt"] as Long }
-                
-                call.respond(ThymeleafContent("projects", mapOf(
-                    "projects" to sortedProjects,
-                    "username" to userSession.username
-                )))
-            } catch (e: Exception) {
-                call.respond(ThymeleafContent("projects", mapOf(
-                    "error" to true,
-                    "message" to "Failed to load projects: ${e.message}",
-                    "username" to userSession.username
-                )))
-            }
+            // Add paint data to project
+            mutableProject["paints"] = projectPaints
+            mutableProject["paintCount"] = totalPaintCount
+            
+            mutableProject
         }
+        
+        // Sort projects by creation date (newest first)
+        val sortedProjects = projectsList.sortedByDescending { it["createdAt"] as Long }
+        
+        call.respond(ThymeleafContent("projects", mapOf(
+            "projects" to sortedProjects,
+            "username" to userSession.username
+        )))
+    } catch (e: Exception) {
+        logger.error("Failed to load projects: ${e.message}", e)
+        call.respond(ThymeleafContent("projects", mapOf(
+            "error" to true,
+            "message" to "Failed to load projects: ${e.message}",
+            "username" to userSession.username
+        )))
+    }
+}
 
         get("/add_project") {
             // Check if user is logged in
@@ -635,8 +700,25 @@ fun Application.configureRouting() {
             }
         }
 
+    // api routes for palette generator
 
+    route("/api/palettes") {
+        get("/random") {
+            val count = call.parameters["count"]?.toIntOrNull() ?: 5
+            val palette = colourService.generateRandomPalette(count)
+            call.respond(mapOf("colours" to palette))
+        }
+
+        //different endpoints for other methods of palette generators go here (if i feel like making any teehee)
+    }
+
+    get("/palette") {
+        call.respond(ThymeleafContent("palette", mapOf("name" to "Ktor")))
+    }
     
+    get("/wishlist") {
+        call.respond(ThymeleafContent("wishlist", mapOf("name" to "Ktor")))
+    }
 
     get("/about") {
         call.respond(ThymeleafContent("about", mapOf("name" to "Ktor")))

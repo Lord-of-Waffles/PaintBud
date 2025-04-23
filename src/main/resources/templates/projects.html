@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Projects</title>
     <link rel="stylesheet" href="/static/css/bulma.min.css">
-    <link rel=" stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .project-card {
             transition: transform 0.3s;
@@ -17,6 +17,86 @@
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
+
+        .paint-chip {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .paint-chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .paint-type-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 8px;
+            margin-right: 12px;
+        }
+
+        .paint-type-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 2px;
+        }
+
+        .paint-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .paint-tooltip {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .paint-tooltip .tooltip-text {
+            visibility: hidden;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.75rem;
+            white-space: nowrap;
+        }
+
+        .paint-tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .paint-count-badge {
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            padding: 2px 5px;
+            font-size: 0.75rem;
+            color: #666;
+            display: inline-flex;
+            align-items: center;
+            margin-right: 8px;
+        }
+
+        .paint-count-badge .icon {
+            margin-right: 3px;
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 
@@ -26,7 +106,7 @@
         <div class="container">
             <div class="navbar-brand">
                 <a class="navbar-item" href="/dashboard">
-                    <strong>Project Manager</strong>
+                    <strong>PaintBud</strong>
                 </a>
                 <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMenu">
                     <span aria-hidden="true"></span>
@@ -43,8 +123,8 @@
                     <a class="navbar-item is-active" href="/projects">
                         Projects
                     </a>
-                    <a class="navbar-item" href="/wishlist">
-                        Wishlist
+                    <a class="navbar-item" href="/palette">
+                        Colour Palette Generator
                     </a>
                 </div>
 
@@ -104,6 +184,98 @@
                                     <p class="is-size-7 has-text-grey">
                                         Created: <span th:text="${project.formattedDate}">Jan 01, 2025</span>
                                     </p>
+
+                                    <!-- Paint Count Badge -->
+                                    <div class="mt-2" th:if="${project.paintCount != null && project.paintCount > 0}">
+                                        <span class="paint-count-badge">
+                                            <span class="icon">
+                                                <i class="fas fa-palette"></i>
+                                            </span>
+                                            <span th:text="${project.paintCount} + ' paints'">12 paints</span>
+                                        </span>
+                                    </div>
+
+                                    <!-- Paint Visualization -->
+                                    <div class="paint-chips-container" th:if="${project.paints != null}">
+                                        <!-- Base Paints -->
+                                        <div class="paint-type-group"
+                                            th:if="${project.paints.base != null && !project.paints.base.isEmpty()}">
+                                            <span class="paint-type-label">Base</span>
+                                            <div class="paint-chips">
+                                                <div class="paint-tooltip" th:each="paint : ${project.paints.base}">
+                                                    <div class="paint-chip"
+                                                        th:style="'background-color:' + ${paint.colour} + ';'"></div>
+                                                    <span class="tooltip-text" th:text="${paint.name}">Paint Name</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Layer Paints -->
+                                        <div class="paint-type-group"
+                                            th:if="${project.paints.layer != null && !project.paints.layer.isEmpty()}">
+                                            <span class="paint-type-label">Layer</span>
+                                            <div class="paint-chips">
+                                                <div class="paint-tooltip" th:each="paint : ${project.paints.layer}">
+                                                    <div class="paint-chip"
+                                                        th:style="'background-color:' + ${paint.colour} + ';'"></div>
+                                                    <span class="tooltip-text" th:text="${paint.name}">Paint Name</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Dry Paints -->
+                                        <div class="paint-type-group"
+                                            th:if="${project.paints.dry != null && !project.paints.dry.isEmpty()}">
+                                            <span class="paint-type-label">Dry</span>
+                                            <div class="paint-chips">
+                                                <div class="paint-tooltip" th:each="paint : ${project.paints.dry}">
+                                                    <div class="paint-chip"
+                                                        th:style="'background-color:' + ${paint.colour} + ';'"></div>
+                                                    <span class="tooltip-text" th:text="${paint.name}">Paint Name</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Technical Paints -->
+                                        <div class="paint-type-group"
+                                            th:if="${project.paints.technical != null && !project.paints.technical.isEmpty()}">
+                                            <span class="paint-type-label">Technical</span>
+                                            <div class="paint-chips">
+                                                <div class="paint-tooltip"
+                                                    th:each="paint : ${project.paints.technical}">
+                                                    <div class="paint-chip"
+                                                        th:style="'background-color:' + ${paint.colour} + ';'"></div>
+                                                    <span class="tooltip-text" th:text="${paint.name}">Paint Name</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Contrast Paints -->
+                                        <div class="paint-type-group"
+                                            th:if="${project.paints.contrast != null && !project.paints.contrast.isEmpty()}">
+                                            <span class="paint-type-label">Contrast</span>
+                                            <div class="paint-chips">
+                                                <div class="paint-tooltip" th:each="paint : ${project.paints.contrast}">
+                                                    <div class="paint-chip"
+                                                        th:style="'background-color:' + ${paint.colour} + ';'"></div>
+                                                    <span class="tooltip-text" th:text="${paint.name}">Paint Name</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Shade Paints -->
+                                        <div class="paint-type-group"
+                                            th:if="${project.paints.shade != null && !project.paints.shade.isEmpty()}">
+                                            <span class="paint-type-label">Shade</span>
+                                            <div class="paint-chips">
+                                                <div class="paint-tooltip" th:each="paint : ${project.paints.shade}">
+                                                    <div class="paint-chip"
+                                                        th:style="'background-color:' + ${paint.colour} + ';'"></div>
+                                                    <span class="tooltip-text" th:text="${paint.name}">Paint Name</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <footer class="card-footer">
                                     <a th:href="${'/edit_project/' + project.projectId}"

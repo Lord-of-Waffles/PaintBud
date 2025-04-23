@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width= device-widthm initial-scale=1">
+    <title>Wishlist</title>
+    <link rel="stylesheet" href="/static/css/bulma.min.css">
+</head>
+
+<body>
+    <nav class="navbar is-primary" role="navigation" aria-label="main navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="/dashboard">
+                    <strong>PaintBud</strong>
+                </a>
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMenu">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+            <div id="navbarMenu" class="navbar-menu">
+                <div class="navbar-start">
+                    <a class="navbar-item is-active" href="/dashboard">
+                        Dashboard
+                    </a>
+                    <a class="navbar-item is-active" href="/projects">
+                        Projects
+                    </a>
+                    <a class="navbar-item is-active" href="/wishlist">
+                        Wishlist
+                    </a>
+                    <a class="navbar-item" href="/palette">
+                        Colour Palette Generator
+                    </a>
+                </div>
+                <div class="navbar-end">
+                    <div class="navbar-item" th:if="${username}">
+                        Welcome, <span class="ml-1" th:text="${username}">User</span>
+                    </div>
+                    <div class="navbar-item">
+                        <a class="button is-light" href="/logout">
+                            Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="section">
+        <div class="container">
+            <h1 class="title">Wishlist</h1>
+
+        </div>
+    </section>
+</body>
+
+</html>
